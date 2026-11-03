@@ -1,15 +1,15 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Configuração do Firebase
+// Configuração atualizada do novo Firebase (data-voto-cesf)
 const firebaseConfig = {
-    apiKey: "AIzaSyDBEb-TyC8wFQAG6rNsidvafhG7VN-TJEE",
-    authDomain: "data-voto-2.firebaseapp.com",
-    databaseURL: "https://data-voto-2-default-rtdb.firebaseio.com",
-    projectId: "data-voto-2",
-    storageBucket: "data-voto-2.firebasestorage.app",
-    messagingSenderId: "123075628669",
-    appId: "1:123075628669:web:80adcb64fd98d8963f6b14"
+    apiKey: "AIzaSyCqIH9iTrMh4Q4mqimB7HWxxxhH7znHz34",
+    authDomain: "data-voto-cesf.firebaseapp.com",
+    databaseURL: "https://data-voto-cesf-default-rtdb.firebaseio.com",
+    projectId: "data-voto-cesf",
+    storageBucket: "data-voto-cesf.firebasestorage.app",
+    messagingSenderId: "740222592167",
+    appId: "1:740222592167:web:71dd95e20244bd8dd6e782"
 };
 
 // Inicializa a aplicação e o banco Firestore
