@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getDatabase, ref, push, get, child, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-// Configuração atualizada do novo Firebase (data-voto-cesf)
+// Configuração do seu Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyCqIH9iTrMh4Q4mqimB7HWxxxhH7znHz34",
     authDomain: "data-voto-cesf.firebaseapp.com",
@@ -12,9 +12,9 @@ const firebaseConfig = {
     appId: "1:740222592167:web:71dd95e20244bd8dd6e782"
 };
 
-// Inicializa a aplicação e o banco Firestore
+// Inicializa a aplicação e o Realtime Database
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = getDatabase(app);
 
 // =========================================================================
 // LÓGICA DA PÁGINA DE PESQUISA (index.html)
@@ -54,14 +54,16 @@ if (formPesquisa) {
         btnEnviar.textContent = "Enviando...";
 
         try {
-            await addDoc(collection(db, "datavoto_cesf_respostas"), dadosResposta);
+            // Grava no Realtime Database no nó 'datavoto_cesf_respostas'
+            const respostasRef = ref(db, "datavoto_cesf_respostas");
+            await push(respostasRef, dadosResposta);
             
             mensagemFeedback.textContent = "Resposta registrada com sucesso! Obrigado por colaborar.";
             mensagemFeedback.className = "success";
             mensagemFeedback.classList.remove("hidden");
             formPesquisa.reset();
         } catch (error) {
-            console.error("Erro ao salvar no Firestore: ", error);
+            console.error("Erro ao salvar no Realtime Database: ", error);
             mensagemFeedback.textContent = "Ocorreu um erro ao enviar sua resposta. Tente novamente.";
             mensagemFeedback.className = "error";
             mensagemFeedback.classList.remove("hidden");
@@ -98,7 +100,8 @@ if (loginSection) {
 
     async function carregarDadosPainel() {
         try {
-            const querySnapshot = await getDocs(collection(db, "datavoto_cesf_respostas"));
+            const dbRef = ref(db);
+            const snapshot = await get(child(dbRef, "datavoto_cesf_respostas"));
             
             let total = 0;
             let somaMoradores = 0;
@@ -111,21 +114,23 @@ if (loginSection) {
                 "Infraestrutura": 0
             };
 
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                total++;
+            if (snapshot.exists()) {
+                snapshot.forEach((childSnapshot) => {
+                    const data = childSnapshot.val();
+                    total++;
 
-                if (typeof data.moradores === "number") {
-                    somaMoradores += data.moradores;
-                }
-                if (typeof data.trabalhadores === "number") {
-                    somaTrabalhadores += data.trabalhadores;
-                }
+                    if (typeof data.moradores === "number") {
+                        somaMoradores += data.moradores;
+                    }
+                    if (typeof data.trabalhadores === "number") {
+                        somaTrabalhadores += data.trabalhadores;
+                    }
 
-                if (contagemPautas[data.pautaPrioritaria] !== undefined) {
-                    contagemPautas[data.pautaPrioritaria]++;
-                }
-            });
+                    if (contagemPautas[data.pautaPrioritaria] !== undefined) {
+                        contagemPautas[data.pautaPrioritaria]++;
+                    }
+                });
+            }
 
             document.getElementById("totalRespostas").textContent = total;
             document.getElementById("mediaMoradores").textContent = total > 0 ? (somaMoradores / total).toFixed(1) : "0.0";
@@ -134,7 +139,7 @@ if (loginSection) {
             gerarGrafico(contagemPautas);
 
         } catch (error) {
-            console.error("Erro ao buscar dados do Firestore:", error);
+            console.error("Erro ao buscar dados do Realtime Database:", error);
         }
     }
 
